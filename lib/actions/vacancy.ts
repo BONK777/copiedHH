@@ -24,7 +24,7 @@ export async function createVacancyAction(formData: FormData) {
     salaryTo: formData.get("salaryTo") || undefined
   });
 
-  if (!parsed.success || !session?.user.id) throw new Error("Validation error");
+  if (!parsed.success || !session?.user.id) return { error: "Validation error" };
 
   await db.vacancy.create({
     data: {
@@ -49,7 +49,7 @@ export async function updateVacancyAction(vacancyId: string, formData: FormData)
     salaryTo: formData.get("salaryTo") || undefined
   });
 
-  if (!parsed.success || !session?.user.id) throw new Error("Validation error");
+  if (!parsed.success || !session?.user.id) return { error: "Validation error" };
 
   await db.vacancy.updateMany({
     where: { id: vacancyId, employerId: session.user.id },
@@ -57,16 +57,16 @@ export async function updateVacancyAction(vacancyId: string, formData: FormData)
   });
 
   revalidatePath(`/vacancies/${vacancyId}`);
-  
+  return { ok: true };
 }
 
 export async function deleteVacancyAction(vacancyId: string) {
   const session = await auth();
   ensureEmployer(session?.user.role);
 
-  if (!session?.user.id) throw new Error("Unauthorized");
+  if (!session?.user.id) return { error: "Unauthorized" };
 
   await db.vacancy.deleteMany({ where: { id: vacancyId, employerId: session.user.id } });
   revalidatePath("/");
-  
+  return { ok: true };
 }

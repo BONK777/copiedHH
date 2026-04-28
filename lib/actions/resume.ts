@@ -21,7 +21,7 @@ export async function createResumeAction(formData: FormData) {
     skills: formData.get("skills")
   });
 
-  if (!parsed.success || !session?.user.id) throw new Error("Validation error");
+  if (!parsed.success || !session?.user.id) return { error: "Validation error" };
 
   await db.resume.create({ data: { ...parsed.data, candidateId: session.user.id } });
   revalidatePath("/dashboard/candidate/resumes/new");
@@ -39,7 +39,7 @@ export async function updateResumeAction(resumeId: string, formData: FormData) {
     skills: formData.get("skills")
   });
 
-  if (!parsed.success || !session?.user.id) throw new Error("Validation error");
+  if (!parsed.success || !session?.user.id) return { error: "Validation error" };
 
   await db.resume.updateMany({
     where: { id: resumeId, candidateId: session.user.id },
@@ -47,16 +47,16 @@ export async function updateResumeAction(resumeId: string, formData: FormData) {
   });
 
   revalidatePath("/dashboard/candidate/resumes/new");
-  
+  return { ok: true };
 }
 
 export async function deleteResumeAction(resumeId: string) {
   const session = await auth();
   ensureCandidate(session?.user.role);
 
-  if (!session?.user.id) throw new Error("Unauthorized");
+  if (!session?.user.id) return { error: "Unauthorized" };
 
   await db.resume.deleteMany({ where: { id: resumeId, candidateId: session.user.id } });
   revalidatePath("/dashboard/candidate/resumes/new");
-  
+  return { ok: true };
 }

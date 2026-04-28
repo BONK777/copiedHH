@@ -16,12 +16,12 @@ export async function signUpAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    throw new Error("Invalid form data");
+    return { error: "Invalid form data" };
   }
 
   const exists = await db.user.findUnique({ where: { email: parsed.data.email } });
   if (exists) {
-    throw new Error("Email already in use");
+    return { error: "Email already in use" };
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);

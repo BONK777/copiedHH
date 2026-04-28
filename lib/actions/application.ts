@@ -8,7 +8,7 @@ import { applicationSchema } from "@/lib/validators/application";
 export async function applyToVacancyAction(formData: FormData) {
   const session = await auth();
   if (session?.user.role !== "CANDIDATE" || !session.user.id) {
-    throw new Error("Only candidates can apply");
+    return { error: "Only candidates can apply" };
   }
 
   const parsed = applicationSchema.safeParse({
@@ -16,7 +16,7 @@ export async function applyToVacancyAction(formData: FormData) {
     coverLetter: formData.get("coverLetter")
   });
 
-  if (!parsed.success) throw new Error("Validation error");
+  if (!parsed.success) return { error: "Validation error" };
 
   await db.application.create({
     data: {
@@ -27,5 +27,5 @@ export async function applyToVacancyAction(formData: FormData) {
   });
 
   revalidatePath(`/vacancies/${parsed.data.vacancyId}`);
-  
+  return { ok: true };
 }
